@@ -27,7 +27,7 @@ var formatMessage = function () {
   return util.format.apply(null, args) + '\n'
 }
 
-var TeamcityReporter = function (baseReporterDecorator) {
+var TeamcityReporter = function (baseReporterDecorator, formatError) {
   baseReporterDecorator(this)
   var self = this
 
@@ -75,8 +75,13 @@ var TeamcityReporter = function (baseReporterDecorator) {
     var log = this.getLog(browser, result)
     var testName = result.description
 
+    var msg = ''
+    result.log.forEach(function (log) {
+      msg += formatError(log, '\t')
+    })
+
     log.push(formatMessage(this.TEST_START, testName))
-    log.push(formatMessage(this.TEST_FAILED, testName, result.log.join('\n\n')))
+    log.push(formatMessage(this.TEST_FAILED, testName, msg))
     log.push(formatMessage(this.TEST_END, testName, result.time))
   }
 
@@ -132,7 +137,7 @@ var TeamcityReporter = function (baseReporterDecorator) {
   }
 }
 
-TeamcityReporter.$inject = ['baseReporterDecorator']
+TeamcityReporter.$inject = ['baseReporterDecorator', 'formatError']
 
 module.exports = {
   'reporter:teamcity': ['type', TeamcityReporter]
